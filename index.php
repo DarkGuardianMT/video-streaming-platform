@@ -12,30 +12,71 @@ include __DIR__ . '/includes/header.php';
     <button type="submit" id="zoekButton">Zoek</button>
   </form>
 
+  
+
   <?php
-  $videos = [
-    ["id" => 1, "title" => "PHP Login Demo", "date" => "05-02-2026"],
-    ["id" => 2, "title" => "MySQL Connect Test", "date" => "04-02-2026"],
-    ["id" => 3, "title" => "React Comments UI", "date" => "03-02-2026"],
-  ];
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "netfish";
+
+    try{
+    $pdo = new PDO('mysql:host=localhost;dbname=netfish', 'root', '');
+        // set the PDO error mode to exception
+      $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+      echo "Connected successfully";
+      } catch(PDOException $e) {
+      echo "Connection failed: " . $e->getMessage();
+    }
   ?>
 
+  <?php
+
+  $videos = [];
+
+  try {
+    $sql = "SELECT id, title, category, video_path, created_at FROM videos";
+    $result = $pdo->query($sql);
+
+    if ($result->rowCount() > 0) {
+
+      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+        $videos[] = $row;
+      }
+
+    } else {
+      echo "No videos found.";
+    }
+
+  } catch(PDOException $e) {
+    echo "Error: " . $e->getMessage();
+  }
+  ?>
+
+  <?php if (!empty($videos)): ?>
   <section class="videos">
     <h3>Nieuwste video's</h3>
 
     <div class="video-grid">
       <?php foreach ($videos as $v): ?>
-        <a class="video-card" href="/video-streaming-platform/pages/video.php?id=<?php echo urlencode($v["id"]); ?>">
-
+        <a class="video-card" href="/video-streaming-platform/pages/video.php?id=<?php echo (int)$v["id"]; ?>">
           <div class="thumb">Thumbnail</div>
           <div class="info">
             <h4><?php echo htmlspecialchars($v["title"]); ?></h4>
-            <p><?php echo htmlspecialchars($v["date"]); ?></p>
+            <p><?php echo htmlspecialchars($v["category"]);?></p>
+            <p><?php echo htmlspecialchars(substr($v["created_at"], 0, 10)); ?></p>
           </div>
         </a>
       <?php endforeach; ?>
     </div>
   </section>
-</div>
+  <?php endif; ?>
+
+  
+
+
+  
+
+
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
