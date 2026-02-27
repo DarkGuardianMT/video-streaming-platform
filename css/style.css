@@ -93,10 +93,14 @@ h2 {
 .thumb{
   height: 160px;
   background: #171717;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #777;
+  overflow: hidden;
+}
+
+.thumb img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;   
+  display: block;
 }
 
 .info{
@@ -111,6 +115,17 @@ h2 {
   margin: 0;
   color: #9a9a9a;
   font-size: 13px;
+}
+.page{
+  width: min(1100px, 92vw);
+  margin: 2rem auto;
+}
+
+.video-player{
+  width: min(900px, 95vw);
+  display: block;
+  margin: 1.5rem auto;
+  border-radius: 14px;
 }
 
 @media (max-width: 900px){
