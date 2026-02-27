@@ -24,7 +24,7 @@ include __DIR__ . '/includes/header.php';
     $pdo = new PDO('mysql:host=localhost;dbname=netfish', 'root', '');
         // set the PDO error mode to exception
       $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      echo "Connected successfully";
+  
       } catch(PDOException $e) {
       echo "Connection failed: " . $e->getMessage();
     }
@@ -35,7 +35,7 @@ include __DIR__ . '/includes/header.php';
   $videos = [];
 
   try {
-    $sql = "SELECT id, title, category, video_path, created_at FROM videos";
+    $sql = "SELECT id, title, category, video_path, thumbnail_path, created_at FROM videos";
     $result = $pdo->query($sql);
 
     if ($result->rowCount() > 0) {
@@ -60,11 +60,16 @@ include __DIR__ . '/includes/header.php';
     <div class="video-grid">
       <?php foreach ($videos as $v): ?>
         <a class="video-card" href="/video-streaming-platform/pages/video.php?id=<?php echo (int)$v["id"]; ?>">
-          <div class="thumb">Thumbnail</div>
+          <div class="thumb">
+            <img src="/video-streaming-platform/images/<?php echo htmlspecialchars($v['thumbnail_path']); ?>" alt="thumbnail" >
+          </div>
           <div class="info">
             <h4><?php echo htmlspecialchars($v["title"]); ?></h4>
             <p><?php echo htmlspecialchars($v["category"]);?></p>
-            <p><?php echo htmlspecialchars(substr($v["created_at"], 0, 10)); ?></p>
+            <p><?php 
+              $date = new DateTime($v['created_at']);
+              echo htmlspecialchars($date->format('d-m-Y'));
+            ?></p>
           </div>
         </a>
       <?php endforeach; ?>
