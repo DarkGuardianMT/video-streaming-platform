@@ -1,41 +1,30 @@
 <?php
 $base = '';
 include __DIR__ . '/includes/header.php';
+require __DIR__ . '/includes/db.php'; 
 ?>
 
-<div id="zoeken">
-  <h2>Welkom bij NetFish!</h2>
-  <p>Bekijk onze nieuwste video`s</p>
+<main>
+  <div id="zoeken">
+    <h2>Welkom bij NetFish!</h2>
+    <p>Bekijk onze nieuwste video's</p>
 
-  <form class="search" action="index.php" method="get">
-    <input type="search" name="search" id="search" placeholder="Zoek videos..." />
-    <button type="submit" id="zoekButton">Zoek</button>
-  </form>
+    <form class="search" action="index.php" method="get">
+      <input type="search" name="search" id="search" placeholder="Zoek videos..." />
+      <button type="submit" id="zoekButton">Zoek</button>
+    </form>
+  </div>
 
   
 
-  <?php
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "netfish";
-
-    try{
-    $pdo = new PDO('mysql:host=localhost;dbname=netfish', 'root', '');
-        // set the PDO error mode to exception
-      $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   
-      } catch(PDOException $e) {
-      echo "Connection failed: " . $e->getMessage();
-    }
-  ?>
 
   <?php
 
   $videos = [];
 
   try {
-    $sql = "SELECT id, title, category, video_path, thumbnail_path, created_at FROM videos";
+    $sql = "SELECT id, title, category, video_path, thumbnail_path, created_at FROM videos ORDER BY created_at DESC";
     $result = $pdo->query($sql);
 
     if ($result->rowCount() > 0) {
@@ -76,7 +65,7 @@ include __DIR__ . '/includes/header.php';
     </div>
   </section>
   <?php endif; ?>
-
+</main>
   
 
 
