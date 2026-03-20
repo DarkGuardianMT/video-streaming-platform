@@ -178,6 +178,42 @@ h2 {
   #navnaam a{ font-size: 22px; }
 }
 
+.video-detail{
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.video-card{
+  border: 1px solid rgba(255,0,0,0.20);
+  border-radius: 16px;
+  background: #161616;
+  padding: 16px;
+}
+
+.video-meta{
+  opacity: .75;
+  margin-top: 6px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.video-player{
+  width: 100%;
+  max-height: 520px;
+  margin-top: 14px;
+  border-radius: 14px;
+  background:#161616;
+}
+
+.back-link{
+  display:inline-block;
+  margin-top: 14px;
+  text-decoration:none;
+  color:#fd4800;
+}
+
 /* ===== Admin UI ===== */
 
 .admin .field input {
@@ -315,14 +351,17 @@ code {
   background: #fff;
 }
 
-.btn--primary {
+.btn--primary,
+.btn--primary:visited{
+  color: #11ae00;
   font-weight: 700;
 }
 
-.btn--ghost {
-  opacity: 0.85;
+.btn--ghost,
+.btn--ghost:visited{
+  color: #fd4800;
+  font-weight: 700;
 }
-
 .pill {
   display: inline-flex;
   padding: 8px 10px;
@@ -492,7 +531,7 @@ code {
   transform: translateY(1px);
 }
 
-/* Focus (klavye ile gezinince güzel görünür) */
+/* Focus */ 
 .btn--edit:focus-visible{
   outline: 2px solid rgba(0,120,255,.45);
   outline-offset: 2px;
@@ -500,8 +539,85 @@ code {
 }
 /* Delete button */
 .btn--danger{
-  background: #7a0f0f;   /* koyu bordo */
+  background: #7a0f0f;   
   color: #fff;
   border-color: transparent;
 }
 .btn--danger:hover{ filter: brightness(1.08); }
+
+
+.nav-welcome{
+  opacity: .85;
+  font-weight: 600;
+  color:#1aff00;
+}
+
+/* Profile page */
+.profile{
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile-card{
+  border: 1px solid rgba(127,127,127,.25);
+  border-radius: 16px;
+  background: rgba(127,127,127,.25);
+  color: #fff;
+  padding: 16px;
+}
+
+.profile-card__top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.profile-title{
+  margin:0;
+  font-size: 26px;
+}
+
+.profile-badge{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(127,127,127,.25);
+  font-size: 13px;
+  opacity: .9;
+}
+
+.profile-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+@media (max-width: 700px){
+  .profile-grid{ grid-template-columns: 1fr; }
+}
+
+.profile-item{
+  border: 1px solid rgba(127,127,127,.18);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.profile-item small{
+  display:block;
+  opacity:.75;
+  margin-bottom:6px;
+}
+
+.profile-item strong{
+  font-size: 16px;
+}
+
+.profile-actions{
+  display:flex;
+  gap:10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}

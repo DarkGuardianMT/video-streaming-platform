@@ -1,5 +1,7 @@
 <?php
 require __DIR__ . '/../includes/db.php';
+require __DIR__ . '/../includes/auth.php';
+require_admin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   header('Location: /video-streaming-platform/admin/index.php');

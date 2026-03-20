@@ -10,7 +10,7 @@ $id = (int)($_GET['id'] ?? 0);
 if ($id > 0) {
   try {
     
-    $pdo = new PDO('mysql:host=localhost;dbname=netfish;charset=utf8mb4', 'root', '');
+    
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $stmt = $pdo->prepare("SELECT * FROM videos WHERE id = ?");
@@ -23,9 +23,7 @@ if ($id > 0) {
 ?>
 
 
-<main class="page">
-  
-
+<main class="video-detail">
   <?php if (!$id): ?>
     <p>Geen video id meegegeven.</p>
 
@@ -33,18 +31,27 @@ if ($id > 0) {
     <p>Video niet gevonden.</p>
 
   <?php else: ?>
-    <h3><?php echo htmlspecialchars($video['title']); ?></h3>
-    <p><?php echo htmlspecialchars($video['category'] ?? ''); ?></p>
-    <p><?php 
-    $date = new DateTime($video['created_at']);
-    echo htmlspecialchars($date->format('d-m-Y'));
-    ?></p>
-    
+    <div class="video-card">
+      <h2><?php echo htmlspecialchars($video['title']); ?></h2>
 
-    <video class="video-player" controls width="640">
-      <source src="/video-streaming-platform/<?php echo htmlspecialchars($video['video_path']); ?>" type="video/mp4">
-      Je browser ondersteunt geen video tag.
-    </video>
+      <div class="video-meta">
+        <span><?php echo htmlspecialchars($video['category'] ?? ''); ?></span>
+        <span>•</span>
+        <span>
+          <?php
+            $date = new DateTime($video['created_at']);
+            echo htmlspecialchars($date->format('d-m-Y'));
+          ?>
+        </span>
+      </div>
+
+      <video class="video-player" controls>
+        <source src="/video-streaming-platform/<?php echo htmlspecialchars($video['video_path']); ?>" type="video/mp4">
+        Je browser ondersteunt geen video tag.
+      </video>
+
+      <a class="back-link" href="/video-streaming-platform/index.php">← Terug naar Home</a>
+    </div>
   <?php endif; ?>
 </main>
 

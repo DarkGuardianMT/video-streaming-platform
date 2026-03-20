@@ -1,6 +1,8 @@
 <?php
 include __DIR__ . '/../includes/header.php';
 require __DIR__ . '/../includes/db.php';
+require __DIR__ . '/../includes/auth.php';
+require_admin();
 
 function slugify($text) {
   $text = strtolower(trim($text));

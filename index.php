@@ -5,12 +5,18 @@ require __DIR__ . '/includes/db.php';
 ?>
 
 <main>
+
+<?php $search = trim($_GET['search'] ?? '');?>
   <div id="zoeken">
     <h2>Welkom bij NetFish!</h2>
     <p>Bekijk onze nieuwste video's</p>
 
+
     <form class="search" action="index.php" method="get">
-      <input type="search" name="search" id="search" placeholder="Zoek videos..." />
+      <input type="search" name="search" id="search"
+       value = "<?php echo htmlspecialchars($search); ?>"
+       placeholder="Zoek videos..."
+       />
       <button type="submit" id="zoekButton">Zoek</button>
     </form>
   </div>
@@ -20,26 +26,37 @@ require __DIR__ . '/includes/db.php';
   
 
   <?php
+    $videos = [];
+    
 
-  $videos = [];
+    try {
+      if ($search !== '') {
+        $stmt = $pdo->prepare("
+          SELECT id, title, category, video_path, thumbnail_path, created_at
+          FROM videos
+          WHERE title LIKE ? OR category LIKE ?
+          ORDER BY created_at DESC, id DESC
+        ");
+        $stmt->execute(['%' . $search . '%', '%' . $search . '%']);
+      } else {
+        $stmt = $pdo->query("
+          SELECT id, title, category, video_path, thumbnail_path, created_at
+          FROM videos
+          ORDER BY created_at DESC, id DESC
+        ");
+      }
 
-  try {
-    $sql = "SELECT id, title, category, video_path, thumbnail_path, created_at FROM videos ORDER BY created_at DESC";
-    $result = $pdo->query($sql);
-
-    if ($result->rowCount() > 0) {
-
-      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+      while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $videos[] = $row;
       }
 
-    } else {
-      echo "No videos found.";
-    }
+      if (empty($videos)) {
+        echo ($search !== '') ? "Geen resultaten." : "No videos found.";
+      }
 
-  } catch(PDOException $e) {
-    echo "Error: " . $e->getMessage();
-  }
+    } catch (PDOException $e) {
+      echo "Error: " . $e->getMessage();
+    }
   ?>
 
   <?php if (!empty($videos)): ?>

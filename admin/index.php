@@ -1,6 +1,8 @@
 <?php
 include __DIR__ . '/../includes/header.php';
 require __DIR__ . '/../includes/db.php';
+require __DIR__ . '/../includes/auth.php';
+require_admin();
 
 // Flash message (redirect sonrası)
 $msg = $_GET['msg'] ?? '';
@@ -11,24 +13,36 @@ if ($msg === 'deleted') $flash = '✅ Video succesvol verwijderd!';
 
 // Videoları çek (en yeni üstte)
 $videos = [];
+$search = trim($_GET['search'] ?? '');
 
   try {
-    $sql = "SELECT id, title, category, video_path, thumbnail_path, created_at FROM videos ORDER BY created_at DESC";
-    $result = $pdo->query($sql);
+      if ($search !== '') {
+        $stmt = $pdo->prepare("
+          SELECT id, title, category, video_path, thumbnail_path, created_at
+          FROM videos
+          WHERE title LIKE ? OR category LIKE ?
+          ORDER BY created_at DESC, id DESC
+        ");
+        $stmt->execute(['%' . $search . '%', '%' . $search . '%']);
+      } else {
+        $stmt = $pdo->query("
+          SELECT id, title, category, video_path, thumbnail_path, created_at
+          FROM videos
+          ORDER BY created_at DESC, id DESC
+        ");
+      }
 
-    if ($result->rowCount() > 0) {
-
-      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+      while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $videos[] = $row;
       }
 
-    } else {
-      echo "No videos found.";
-    }
+      if (empty($videos)) {
+        echo ($search !== '') ? "Geen resultaten." : "No videos found.";
+      }
 
-  } catch(PDOException $e) {
-    echo "Error: " . $e->getMessage();
-  }
+    } catch (PDOException $e) {
+      echo "Error: " . $e->getMessage();
+    }
   ?>
 
 <main class="admin">
@@ -43,6 +57,14 @@ $videos = [];
       <a class="btn btn--primary" href="/video-streaming-platform/admin/add_video.php"> Video toevoegen</a>
     </div>
   </header>
+
+  <form class="search" action="index.php" method="get">
+      <input type="search" name="search" id="search"
+       value = "<?php echo htmlspecialchars($search); ?>"
+       placeholder="Zoek videos..."
+       />
+      <button type="submit" id="zoekButton">Zoek</button>
+  </form>
 
   <?php if ($flash): ?>
     <div class="alert <?php echo (str_starts_with($flash, '❌') ? 'alert-error' : 'alert-success'); ?>">
