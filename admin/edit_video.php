@@ -1,6 +1,8 @@
 <?php
 include __DIR__ . '/../includes/header.php';
 require __DIR__ . '/../includes/db.php';
+require __DIR__ . '/../includes/auth.php';
+require_admin();
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
@@ -23,36 +25,34 @@ if (!$video) {
 $errors = [];
 $success = null;
 
-// 2) POST geldiyse update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $title = trim($_POST['title'] ?? '');
   $category = trim($_POST['category'] ?? '');
-
-  if ($title === '') $errors[] = "Titel is verplicht.";
-  if ($category === '') $errors[] = "Categorie is verplicht.";
-
-  if (empty($errors)) {
-    $up = $pdo->prepare("
-    UPDATE videos
-    SET title = ?, category = ?, video_path = ?, thumbnail_path = ?
-    WHERE id = ?
-    ");
-    $up->execute([$title, $category, $video_path, $thumbnail_path, $id]);
-    header("Location: /video-streaming-platform/admin/index.php?msg=updated");
-    exit;
-  }
-
   $video_path = trim($_POST['video_path'] ?? '');
   $thumbnail_path = trim($_POST['thumbnail_path'] ?? '');
 
+  if ($title === '') $errors[] = "Titel is verplicht.";
+  if ($category === '') $errors[] = "Categorie is verplicht.";
   if ($video_path === '') $errors[] = "Video pad is verplicht.";
   if ($thumbnail_path === '') $errors[] = "Thumbnail pad is verplicht.";
 
   if ($video_path !== '' && !str_starts_with($video_path, 'videos/')) {
-  $errors[] = "Video pad moet starten met videos/.";
+    $errors[] = "Video pad moet starten met videos/.";
   }
 
-  // Hata varsa formda yazdıklarını koru:
+  if (empty($errors)) {
+    $up = $pdo->prepare("
+      UPDATE videos
+      SET title = ?, category = ?, video_path = ?, thumbnail_path = ?
+      WHERE id = ?
+    ");
+    $up->execute([$title, $category, $video_path, $thumbnail_path, $id]);
+
+    header("Location: /video-streaming-platform/admin/index.php?msg=updated");
+    exit;
+  }
+
+  
   $video['title'] = $title;
   $video['category'] = $category;
   $video['video_path'] = $video_path;
@@ -102,14 +102,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="field">
-            <label for="video_path">Video pad</label>
+            <label for="video_path">Video path</label>
             <input id="video_path" name="video_path"
                     value="<?php echo htmlspecialchars($video['video_path']); ?>"
                     placeholder="videos/voorbeeld.mp4" required>
         </div>
 
         <div class="field">
-            <label for="thumbnail_path">Thumbnail pad</label>
+            <label for="thumbnail_path">Thumbnail path</label>
             <input id="thumbnail_path" name="thumbnail_path"
                     value="<?php echo htmlspecialchars($video['thumbnail_path']); ?>"
                     placeholder="thumbnails/voorbeeld.jpg" required>
