@@ -1,0 +1,14 @@
+/includes/config.local.php
+/.env
+/.env.*
+*.sql.gz
+*.sqlite
+*.sqlite3
+/videos/*
+!/videos/.htaccess
+!/videos/big-buck-bunny-demo.mp4
+!/videos/big-buck-bunny-forest.mp4
+/images/thumbnails/*
+!/images/thumbnails/.htaccess
+!/images/thumbnails/big-buck-bunny-demo.jpg
+!/images/thumbnails/big-buck-bunny-forest.jpg

@@ -1,7 +1,8 @@
 <?php
-$base = '';
+require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/media.php';
+require __DIR__ . '/includes/db.php';
 include __DIR__ . '/includes/header.php';
-require __DIR__ . '/includes/db.php'; 
 ?>
 
 <main>
@@ -55,7 +56,8 @@ require __DIR__ . '/includes/db.php';
       }
 
     } catch (PDOException $e) {
-      echo "Error: " . $e->getMessage();
+      error_log('NETFISH video query failed.');
+      echo 'Video overzicht tijdelijk niet beschikbaar.';
     }
   ?>
 
@@ -67,7 +69,7 @@ require __DIR__ . '/includes/db.php';
       <?php foreach ($videos as $v): ?>
         <a class="video-card" href="/video-streaming-platform/pages/video.php?id=<?php echo (int)$v["id"]; ?>">
           <div class="thumb">
-            <img src="/video-streaming-platform/images/<?php echo htmlspecialchars($v['thumbnail_path']); ?>" alt="thumbnail" >
+            <img src="<?php echo htmlspecialchars(media_url($v['thumbnail_path'], true)); ?>" alt="thumbnail" >
           </div>
           <div class="info">
             <h4><?php echo htmlspecialchars($v["title"]); ?></h4>

@@ -1,7 +1,7 @@
 <?php
-include __DIR__ . '/../includes/header.php';
 require __DIR__ . '/../includes/auth.php';
 require_login();
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <main class="profile">
@@ -27,7 +27,10 @@ require_login();
 
     <div class="profile-actions">
       <a class="btn btn--ghost" href="/video-streaming-platform/index.php">Home</a>
-      <a class="btn btn--danger" href="/video-streaming-platform/pages/logout.php">Uitloggen</a>
+      <form method="post" action="/video-streaming-platform/pages/logout.php">
+        <?php echo csrf_field(); ?>
+        <button class="btn btn--danger" type="submit">Uitloggen</button>
+      </form>
     </div>
   </div>
 </main>

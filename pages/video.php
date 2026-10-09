@@ -1,5 +1,7 @@
-<?php include __DIR__ . '/../includes/header.php'; ?>
+<?php require_once __DIR__ . '/../includes/bootstrap.php'; ?>
+<?php require_once __DIR__ . '/../includes/media.php'; ?>
 <?php require __DIR__ . '/../includes/db.php'; ?>
+<?php include __DIR__ . '/../includes/header.php'; ?>
 
 <?php
 
@@ -17,7 +19,8 @@ if ($id > 0) {
     $stmt->execute([$id]);
     $video = $stmt->fetch(PDO::FETCH_ASSOC);
   } catch (PDOException $e) {
-    echo "<p>DB error: " . htmlspecialchars($e->getMessage()) . "</p>";
+    error_log('NETFISH video query failed.');
+    echo '<p>Video tijdelijk niet beschikbaar.</p>';
   }
 }
 ?>
@@ -46,9 +49,12 @@ if ($id > 0) {
       </div>
 
       <video class="video-player" controls>
-        <source src="/video-streaming-platform/<?php echo htmlspecialchars($video['video_path']); ?>" type="video/mp4">
+        <source src="<?php echo htmlspecialchars(media_url($video['video_path'])); ?>" type="<?php echo video_mime($video['video_path']); ?>">
         Je browser ondersteunt geen video tag.
       </video>
+      <?php if (resolved_media_path($video['video_path']) !== $video['video_path']): ?>
+        <p>Het oorspronkelijke bestand is vervangen door een gelicentieerd demo-fragment van Big Buck Bunny.</p>
+      <?php endif; ?>
 
       <a class="back-link" href="/video-streaming-platform/index.php">← Terug naar Home</a>
     </div>

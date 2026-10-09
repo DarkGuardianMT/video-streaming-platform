@@ -1,0 +1,9 @@
+Options -Indexes -ExecCGI
+RemoveHandler .jpg .jpeg .png .webp
+RemoveType .jpg .jpeg .png .webp
+AddType image/jpeg .jpg .jpeg
+AddType image/png .png
+AddType image/webp .webp
+<FilesMatch "^(?![A-Za-z0-9_-]+\.(?:jpg|jpeg|png|webp)$).+">
+    Require all denied
+</FilesMatch>

@@ -1,11 +1,12 @@
 <?php
-include __DIR__ . '/../includes/header.php';
-require __DIR__ . '/../includes/db.php';
 require __DIR__ . '/../includes/auth.php';
 require_admin();
+require_once __DIR__ . '/../includes/media.php';
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
+  http_response_code(400);
+  include __DIR__ . '/../includes/header.php';
   echo "<p>Ongeldige video id.</p>";
   include __DIR__ . '/../includes/footer.php';
   exit;
@@ -17,6 +18,8 @@ $stmt->execute([$id]);
 $video = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$video) {
+  http_response_code(404);
+  include __DIR__ . '/../includes/header.php';
   echo "<p>Video niet gevonden.</p>";
   include __DIR__ . '/../includes/footer.php';
   exit;
@@ -26,18 +29,23 @@ $errors = [];
 $success = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $title = trim($_POST['title'] ?? '');
-  $category = trim($_POST['category'] ?? '');
-  $video_path = trim($_POST['video_path'] ?? '');
-  $thumbnail_path = trim($_POST['thumbnail_path'] ?? '');
+  require_csrf();
+  $title = trim(post_string('title'));
+  $category = trim(post_string('category'));
+  $video_path = trim(post_string('video_path'));
+  $thumbnail_path = trim(post_string('thumbnail_path'));
 
   if ($title === '') $errors[] = "Titel is verplicht.";
   if ($category === '') $errors[] = "Categorie is verplicht.";
   if ($video_path === '') $errors[] = "Video pad is verplicht.";
   if ($thumbnail_path === '') $errors[] = "Thumbnail pad is verplicht.";
 
-  if ($video_path !== '' && !str_starts_with($video_path, 'videos/')) {
-    $errors[] = "Video pad moet starten met videos/.";
+  if (strlen($title) > 255 || strlen($category) > 100) $errors[] = 'Titel of categorie te lang.';
+  if (!safe_media_path($video_path) && !is_legacy_media($video_path)) {
+    $errors[] = 'Kies een bestaand bestand in videos/.';
+  }
+  if (!safe_media_path($thumbnail_path, true) && !is_legacy_media($thumbnail_path, true)) {
+    $errors[] = 'Kies een bestaande afbeelding in thumbnails/.';
   }
 
   if (empty($errors)) {
@@ -58,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $video['video_path'] = $video_path;
   $video['thumbnail_path'] = $thumbnail_path;
 }
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <main class="admin">
@@ -90,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <form id="editForm" class="form" method="post">
+      <?php echo csrf_field(); ?>
       <div class="form__row">
         <div class="field">
           <label for="title">Titel</label>

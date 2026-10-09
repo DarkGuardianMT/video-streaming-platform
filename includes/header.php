@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/bootstrap.php';
 ?>
 
 <!DOCTYPE html>
@@ -47,9 +47,10 @@ session_start();
         <?php endif; ?>
 
         <li>
-          <a href="/video-streaming-platform/pages/logout.php"
-          onclick="return confirm('Weet je zeker dat je wilt uitloggen?');">
-          Uitloggen</a>
+          <form method="post" action="/video-streaming-platform/pages/logout.php">
+            <?php echo csrf_field(); ?>
+            <button class="nav-logout" type="submit">Uitloggen</button>
+          </form>
         </li>
       <?php endif; ?>
     </ul>

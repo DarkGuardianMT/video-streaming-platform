@@ -1,26 +1,17 @@
 <?php
-require __DIR__ . '/../includes/db.php';
 require __DIR__ . '/../includes/auth.php';
 require_admin();
+require_post();
+require_csrf();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  header('Location: /video-streaming-platform/admin/index.php');
-  exit;
-}
-
-$id = (int)($_POST['id'] ?? 0);
+$id = (int)filter_var(post_string('id'), FILTER_VALIDATE_INT);
 if ($id <= 0) {
   header('Location: /video-streaming-platform/admin/index.php');
   exit;
 }
 
 try {
-  // select paths
-  $stmt = $pdo->prepare("SELECT video_path, thumbnail_path FROM videos WHERE id = ?");
-  $stmt->execute([$id]);
-  $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-  // delete from db
+  // Delete the record only; media can still be referenced by other records.
   $del = $pdo->prepare("DELETE FROM videos WHERE id = ?");
   $del->execute([$id]);
 

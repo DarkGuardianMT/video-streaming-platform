@@ -611,6 +611,20 @@ code {
   margin-bottom:6px;
 }
 
+.nav-logout {
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.media-credit {
+  padding: 20px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
 .profile-item strong{
   font-size: 16px;
 }

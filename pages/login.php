@@ -1,18 +1,19 @@
 <?php
-include __DIR__ . '/../includes/header.php';
-require __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 $errors = [];
 $msg = $_GET['msg'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $email = trim($_POST['email'] ?? '');
-  $password = $_POST['password'] ?? '';
+  require_csrf();
+  $email = trim(post_string('email'));
+  $password = post_string('password');
 
   if ($email === '') $errors[] = "E-mail is verplicht.";
   if ($password === '') $errors[] = "Wachtwoord is verplicht.";
 
   if (empty($errors)) {
+    require_once __DIR__ . '/../includes/db.php';
     $stmt = $pdo->prepare("SELECT id, username, email, password, isAdmin FROM users WHERE email = ? LIMIT 1");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -21,7 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $errors[] = "Onjuiste e-mail of wachtwoord.";
     } else {
       if (password_verify($password, $user['password'])) {
-        // session already started in header.php
+        session_regenerate_id(true);
+        $_SESSION = [];
         $_SESSION['user_id'] = (int)$user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['email'] = $user['email'];
@@ -42,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 }
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <main class="page">
@@ -62,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php endif; ?>
 
   <form method="post">
+    <?php echo csrf_field(); ?>
     <div class="field">
       <label for="email">E-mail</label>
       <input id="email" name="email" type="email" required>

@@ -1,8 +1,8 @@
 <?php
-include __DIR__ . '/../includes/header.php';
-require __DIR__ . '/../includes/db.php';
 require __DIR__ . '/../includes/auth.php';
 require_admin();
+require_once __DIR__ . '/../includes/media.php';
+include __DIR__ . '/../includes/header.php';
 
 // Flash message (redirect sonrası)
 $msg = $_GET['msg'] ?? '';
@@ -41,7 +41,8 @@ $search = trim($_GET['search'] ?? '');
       }
 
     } catch (PDOException $e) {
-      echo "Error: " . $e->getMessage();
+      error_log('NETFISH video query failed.');
+      echo 'Video overzicht tijdelijk niet beschikbaar.';
     }
   ?>
 
@@ -93,7 +94,7 @@ $search = trim($_GET['search'] ?? '');
               $d = new DateTime($v['created_at']);
               $dateStr = $d->format('d-m-Y');
             }
-            $thumbUrl = "/video-streaming-platform/images/" . $thumb;
+            $thumbUrl = media_url($thumb, true);
             $watchUrl = "/video-streaming-platform/pages/video.php?id=" . $id;
             $editUrl  = "/video-streaming-platform/admin/edit_video.php?id=" . $id;
           ?>
@@ -119,6 +120,7 @@ $search = trim($_GET['search'] ?? '');
               <form method="post" action="/video-streaming-platform/admin/delete_video.php"
                     onsubmit="return confirm('Weet je zeker dat je deze video wilt verwijderen?');">
                 <input type="hidden" name="id" value="<?php echo $id; ?>">
+                <?php echo csrf_field(); ?>
                 <button class="btn btn--danger" type="submit">Verwijderen</button>
               </form>
             </div>

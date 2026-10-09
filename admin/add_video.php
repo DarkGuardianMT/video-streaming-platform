@@ -1,101 +1,50 @@
 <?php
-include __DIR__ . '/../includes/header.php';
-require __DIR__ . '/../includes/db.php';
 require __DIR__ . '/../includes/auth.php';
 require_admin();
-
-function slugify($text) {
-  $text = strtolower(trim($text));
-  $text = preg_replace('/[^a-z0-9\-_]+/', '-', $text);
-  $text = trim($text, '-');
-  return $text ?: 'file';
-}
-
-function uniqueName($dir, $base, $ext) {
-  $name = $base . '.' . $ext;
-  $i = 2;
-  while (file_exists($dir . $name)) {
-    $name = $base . '-' . $i . '.' . $ext;
-    $i++;
-  }
-  return $name;
-}
+require_once __DIR__ . '/../includes/uploads.php';
 
 $errors = [];
-$success = null;
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $title = trim($_POST['title'] ?? '');
-  $category = trim($_POST['category'] ?? '');
+    require_csrf();
+    $title = trim(post_string('title'));
+    $category = trim(post_string('category'));
+    if ($title === '' || strlen($title) > 255) $errors[] = 'Titel is verplicht (maximaal 255 bytes).';
+    if ($category === '' || strlen($category) > 100) $errors[] = 'Categorie is verplicht (maximaal 100 bytes).';
 
-  $video_name = trim($_POST['video_name'] ?? '');       
-  $thumb_name = trim($_POST['thumb_name'] ?? '');      
-
-  if ($title === '') $errors[] = "Titel is verplicht.";
-  if ($category === '') $errors[] = "Categorie is verplicht.";
-
-  
-  if (empty($_FILES['video_file']['name'])) $errors[] = "Video bestand is verplicht.";
-  if (empty($_FILES['thumb_file']['name'])) $errors[] = "Thumbnail bestand is verplicht.";
-
-  if (empty($errors)) {
-    
-    $videoDir = __DIR__ . '/../videos/';
-    $thumbDir = __DIR__ . '/../images/thumbnails/';
-
-    if (!is_dir($videoDir)) mkdir($videoDir, 0777, true);
-    if (!is_dir($thumbDir)) mkdir($thumbDir, 0777, true);
-
-    // --- VIDEO ---
-    $videoTmp = $_FILES['video_file']['tmp_name'];
-    $videoExt = strtolower(pathinfo($_FILES['video_file']['name'], PATHINFO_EXTENSION));
-
-    $allowedVideo = ['mp4','webm','ogg'];
-    if (!in_array($videoExt, $allowedVideo, true)) $errors[] = "Video type niet toegestaan. Alleen: mp4/webm/ogg";
-
-    
-    if ($video_name === '') {
-      $video_name = pathinfo($_FILES['video_file']['name'], PATHINFO_FILENAME);
+    if (!$errors) {
+        $movedFiles = [];
+        try {
+            $video = $_FILES['video_file'] ?? [];
+            $thumb = $_FILES['thumb_file'] ?? [];
+            if (!is_array($video) || !is_array($thumb)) throw new RuntimeException('Ongeldige upload.');
+            $videoExt = validate_upload($video);
+            $thumbExt = validate_upload($thumb, true);
+            $videoFile = upload_filename(post_string('video_name'), $videoExt);
+            $thumbFile = upload_filename(post_string('thumb_name'), $thumbExt);
+            $videoTarget = __DIR__ . '/../videos/' . $videoFile;
+            $thumbTarget = __DIR__ . '/../images/thumbnails/' . $thumbFile;
+            if (!move_uploaded_file($video['tmp_name'], $videoTarget)) throw new RuntimeException('Video opslaan mislukt.');
+            $movedFiles[] = $videoTarget;
+            if (!move_uploaded_file($thumb['tmp_name'], $thumbTarget)) throw new RuntimeException('Thumbnail opslaan mislukt.');
+            $movedFiles[] = $thumbTarget;
+            $stmt = $pdo->prepare('INSERT INTO videos (title, category, video_path, thumbnail_path, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)');
+            $stmt->execute([$title, $category, 'videos/' . $videoFile, 'thumbnails/' . $thumbFile]);
+            header('Location: /video-streaming-platform/admin/index.php?msg=added');
+            exit;
+        } catch (PDOException $e) {
+            error_log('NETFISH video insert failed.');
+            $errors[] = 'Video kon niet worden opgeslagen.';
+        } catch (RuntimeException $e) {
+            $errors[] = $e->getMessage();
+        }
+        // Only paths created by this request can be removed here.
+        foreach ($movedFiles as $movedFile) {
+            if (is_file($movedFile)) unlink($movedFile);
+        }
     }
-    $videoBase = slugify($video_name);
-    $videoFile = uniqueName($videoDir, $videoBase, $videoExt);
-
-    // --- THUMBNAIL ---
-    $thumbTmp = $_FILES['thumb_file']['tmp_name'];
-    $thumbExt = strtolower(pathinfo($_FILES['thumb_file']['name'], PATHINFO_EXTENSION));
-
-    $allowedImg = ['jpg','jpeg','png','webp'];
-    if (!in_array($thumbExt, $allowedImg, true)) $errors[] = "Thumbnail type niet toegestaan. Alleen: jpg/png/webp";
-
-    if ($thumb_name === '') {
-      $thumb_name = pathinfo($_FILES['thumb_file']['name'], PATHINFO_FILENAME);
-    }
-    $thumbBase = slugify($thumb_name);
-    $thumbFile = uniqueName($thumbDir, $thumbBase, $thumbExt);
-
-    if (empty($errors)) {
-      
-      if (!move_uploaded_file($videoTmp, $videoDir . $videoFile)) $errors[] = "Upload video mislukt.";
-      if (!move_uploaded_file($thumbTmp, $thumbDir . $thumbFile)) $errors[] = "Upload thumbnail mislukt.";
-
-      if (empty($errors)) {
-        
-        $video_path = 'videos/' . $videoFile;
-        $thumbnail_path = 'thumbnails/' . $thumbFile; 
-
-        $stmt = $pdo->prepare("
-          INSERT INTO videos (title, category, video_path, thumbnail_path, created_at)
-          VALUES (?, ?, ?, ?, NOW())
-        ");
-        $stmt->execute([$title, $category, $video_path, $thumbnail_path]);
-
-        $success = "✅ Video succesvol toegevoegd!";
-      }
-    }
-  }
 }
+include __DIR__ . '/../includes/header.php';
 ?>
-
 <main class="admin">
   <header class="admin__top">
     <div>
@@ -118,17 +67,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   <?php endif; ?>
 
-  <?php if ($success): ?>
-    <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
-  <?php endif; ?>
-
-  <section class="card">
+<section class="card">
     <div class="card__head">
       <h3>Nieuwe video</h3>
       
     </div>
 
     <form id="videoForm" class="form" method="post" enctype="multipart/form-data">
+      <?php echo csrf_field(); ?>
       <div class="form__row">
         <div class="field">
           <label for="title">Titel</label>

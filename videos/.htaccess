@@ -1,0 +1,9 @@
+Options -Indexes -ExecCGI
+RemoveHandler .mp4 .webm .ogg
+RemoveType .mp4 .webm .ogg
+AddType video/mp4 .mp4
+AddType video/webm .webm
+AddType video/ogg .ogg
+<FilesMatch "^(?![A-Za-z0-9_-]+\.(?:mp4|webm|ogg)$).+">
+    Require all denied
+</FilesMatch>
